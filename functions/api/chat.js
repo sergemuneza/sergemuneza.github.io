@@ -1,6 +1,6 @@
 export async function onRequestPost(context) {
   const { request, env } = context;
-
+ 
   const cors = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
