@@ -2117,39 +2117,23 @@ RESPONSE RULES
     addTypingIndicator();
 
     try {
-      const GEMINI_KEY = 'AIzaSyDVWLHhw9YDQHZb7FdRo0cSNAazhGkbz4g';
-      const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`;
-
-      const contents = conversationHistory.map(m => ({
-        role: m.role === 'assistant' ? 'model' : 'user',
-        parts: [{ text: m.content }]
-      }));
-
-      const response = await fetch(GEMINI_URL, {
+      // API key is stored securely in Cloudflare — never exposed in code
+      const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-          contents,
-          generationConfig: { maxOutputTokens: 1000, temperature: 0.7 }
+          system: SYSTEM_PROMPT,
+          messages: conversationHistory
         })
       });
 
       const data = await response.json();
       removeTypingIndicator();
 
-      // Log full response for debugging
-      console.log('Gemini response:', JSON.stringify(data));
-
-      if (data?.error) {
-        console.error('Gemini API error:', data.error);
-        addMessage('bot', 'API error: ' + (data.error.message || 'Unknown error. Check console.'));
-      } else {
-        const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text
-          || "I'm not sure about that. Please contact Serge directly at sergemuneza07@gmail.com!";
-        conversationHistory.push({ role: 'assistant', content: reply });
-        addMessage('bot', reply);
-      }
+      const reply = data?.reply
+        || "I'm not sure about that. Please contact Serge directly at sergemuneza07@gmail.com!";
+      conversationHistory.push({ role: 'assistant', content: reply });
+      addMessage('bot', reply);
 
     } catch (err) {
       removeTypingIndicator();
