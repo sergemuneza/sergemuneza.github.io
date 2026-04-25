@@ -30,7 +30,7 @@ export async function onRequestPost(context) {
         'X-Title': 'Serge Muneza Portfolio'
       },
       body: JSON.stringify({
-        model: 'mistralai/mistral-7b-instruct:free',
+        model: 'openrouter/auto',
         messages: formattedMessages,
         max_tokens: 1000,
         temperature: 0.7
