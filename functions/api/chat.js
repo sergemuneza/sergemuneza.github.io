@@ -16,7 +16,7 @@ export async function onRequestPost(context) {
       return new Response(JSON.stringify({ reply: 'Server configuration error: API key not set.' }), { status: 500, headers: cors });
     }
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${apiKey}`;
 
     const contents = messages.map(m => ({
       role: m.role === 'assistant' ? 'model' : 'user',
