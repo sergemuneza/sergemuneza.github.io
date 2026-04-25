@@ -1,6 +1,6 @@
 export async function onRequestPost(context) {
   const { request, env } = context;
- 
+
   const cors = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
@@ -11,35 +11,39 @@ export async function onRequestPost(context) {
   try {
     const { system, messages } = await request.json();
 
-    const apiKey = env.GEMINI_API_KEY;
+    const apiKey = env.OPENROUTER_API_KEY;
     if (!apiKey) {
       return new Response(JSON.stringify({ reply: 'Server configuration error: API key not set.' }), { status: 500, headers: cors });
     }
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${apiKey}`;
+    const formattedMessages = [
+      { role: 'system', content: system },
+      ...messages.map(m => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: m.content }))
+    ];
 
-    const contents = messages.map(m => ({
-      role: m.role === 'assistant' ? 'model' : 'user',
-      parts: [{ text: m.content }]
-    }));
-
-    const geminiRes = await fetch(url, {
+    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://sergemuneza.pages.dev',
+        'X-Title': 'Serge Muneza Portfolio'
+      },
       body: JSON.stringify({
-        system_instruction: { parts: [{ text: system }] },
-        contents,
-        generationConfig: { maxOutputTokens: 1000, temperature: 0.7 }
+        model: 'meta-llama/llama-3.2-3b-instruct:free',
+        messages: formattedMessages,
+        max_tokens: 1000,
+        temperature: 0.7
       })
     });
 
-    const data = await geminiRes.json();
+    const data = await res.json();
 
     if (data?.error) {
       return new Response(JSON.stringify({ reply: 'AI error: ' + data.error.message }), { headers: cors });
     }
 
-    const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text
+    const reply = data?.choices?.[0]?.message?.content
       || "I'm not sure about that. Please contact Serge directly at sergemuneza07@gmail.com!";
 
     return new Response(JSON.stringify({ reply }), { headers: cors });
