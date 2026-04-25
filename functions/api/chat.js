@@ -30,7 +30,7 @@ export async function onRequestPost(context) {
         'X-Title': 'Serge Muneza Portfolio'
       },
       body: JSON.stringify({
-        model: 'meta-llama/llama-3.2-3b-instruct:free',
+        model: 'mistralai/mistral-7b-instruct:free',
         messages: formattedMessages,
         max_tokens: 1000,
         temperature: 0.7
