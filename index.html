@@ -2118,7 +2118,7 @@ RESPONSE RULES
 
     try {
       const GEMINI_KEY = 'AIzaSyDVWLHhw9YDQHZb7FdRo0cSNAazhGkbz4g';
-      const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`;
+      const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`;
 
       const contents = conversationHistory.map(m => ({
         role: m.role === 'assistant' ? 'model' : 'user',
@@ -2138,14 +2138,22 @@ RESPONSE RULES
       const data = await response.json();
       removeTypingIndicator();
 
-      const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text
-        || "I'm not sure about that. Please contact Serge directly at sergemuneza07@gmail.com!";
+      // Log full response for debugging
+      console.log('Gemini response:', JSON.stringify(data));
 
-      conversationHistory.push({ role: 'assistant', content: reply });
-      addMessage('bot', reply);
+      if (data?.error) {
+        console.error('Gemini API error:', data.error);
+        addMessage('bot', 'API error: ' + (data.error.message || 'Unknown error. Check console.'));
+      } else {
+        const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text
+          || "I'm not sure about that. Please contact Serge directly at sergemuneza07@gmail.com!";
+        conversationHistory.push({ role: 'assistant', content: reply });
+        addMessage('bot', reply);
+      }
 
     } catch (err) {
       removeTypingIndicator();
+      console.error('Fetch error:', err);
       addMessage('bot', "Connection issue — please reach Serge at sergemuneza07@gmail.com or on WhatsApp.");
     }
 
